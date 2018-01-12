@@ -1,0 +1,23 @@
+{
+  "name": "yelpcamp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mayanksuchde/yelpCamp.git"
+  },
+  "author": "Mayank Suchade",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mayanksuchde/yelpCamp/issues"
+  },
+  "homepage": "https://github.com/mayanksuchde/yelpCamp#readme",
+  "dependencies": {
+    "ejs": "^2.5.7",
+    "express": "^4.16.2"
+  }
+}

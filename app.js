@@ -1,33 +1,16 @@
 var express   =require("express"),
     app       =express(),
     bodyParser=require("body-parser"),
-    mongoose  =require("mongoose");
+    mongoose  =require("mongoose"),
+    Campground=require("./models/campgrounds"),
+    Comment   =require("./models/comments"),
+    seedDB=require("./seeds");
 
 mongoose.connect("mongodb://localhost/yelp_camp");
 app.use(bodyParser.urlencoded({extended:true}));
 app.set("view engine","ejs");
-
-
-var campgroundSchema= new mongoose.Schema({
-    name:String,
-    image:String,
-    description:String
-});
-
-var Campground=mongoose.model("Campground",campgroundSchema);
-
-// Campground.create({
-//   name:"Black Lake",
-//   image:"https://static1.squarespace.com/static/57a33100579fb3f47b0e4f5f/57c33c569f745643297c9a2b/57c33c568419c2d24d5e3839/1472412848948/Campsite7.jpg",
-//   description:"This is a huge campground with lake viwe and no toilets"
-// },function(err,campground){
-//     if(err){
-//         console.log(err)
-//     }else{
-//         console.log("Newly created campground:");
-//         console.log(campground);
-//     }
-// });
+app.use(express.static(__dirname + "/public"));
+seedDB();
 
 app.get("/",function(req,res){
     res.render("landing");
@@ -41,7 +24,7 @@ app.get("/campgrounds",function(req,res){
             if(err){
                 console.log(err);
             }else{
-                res.render("index",{campgrounds:allCampgrounds});
+                res.render("campgrounds/index",{campgrounds:allCampgrounds});
             }
         })
     
@@ -63,20 +46,57 @@ app.post("/campgrounds",function(req,res){
 });
 
 app.get("/campgrounds/new",function(req, res) {
-    res.render("new")
+    res.render("campgrounds/new")
 })
 
+
 app.get("/campgrounds/:id",function(req, res) {
-    Campground.findById(req.params.id,function(err,foundCampground){
+    Campground.findById(req.params.id).populate("comments").exec(function(err,foundCampground){
        if(err){
            console.log(err)
        } else{
-           res.render("show",{campground:foundCampground});
+           
+           
+           res.render("campgrounds/show",{campground:foundCampground});
        }
     });
     
     
-})
+});
+
+//=======================================================
+//Comments Routes
+//=======================================================
+
+app.get("/campgrounds/:id/comments/new",function(req, res) {
+    Campground.findById(req.params.id,function(err,campground){
+       if(err){
+           console.log(err);
+       }else{
+               res.render("comments/new",{campground:campground}); 
+       }
+    });
+});
+
+
+app.post("/campgrounds/:id/comments",function(req,res){
+   Campground.findById(req.params.id,function(err, campground) {
+      if(err){
+          console.log(err);
+          res.redirect("/campgrounds");
+      }else{
+          Comment.create(req.body.comment,function(err,comment){
+              if(err){
+                  console.log(err);
+              }else{
+                  campground.comments.push(comment);
+                  campground.save();
+                  res.redirect("/campgrounds/"+campground._id);
+              }
+          }); 
+      }
+   });
+});
 
 app.listen(process.env.PORT,process.env.IP,function(){
     console.log("Yelp Camp has started");

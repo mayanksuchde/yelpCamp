@@ -41,7 +41,7 @@ router.post("/",isLoggedIn,function(req,res){
 
 
 //Comments edit Route
-router.get("/:comment_id/edit",function(req, res){
+router.get("/:comment_id/edit",checkCommentOwnership,function(req, res){
     Comment.findById(req.params.comment_id,function(err, foundComment) {
         if(err){
             res.render("back");
@@ -53,7 +53,7 @@ router.get("/:comment_id/edit",function(req, res){
 });
 
 //Comments update route 
-router.put("/:comment_id",function(req,res){
+router.put("/:comment_id",checkCommentOwnership,function(req,res){
     Comment.findByIdAndUpdate(req.params.comment_id,req.body.comment,function (err,updatedComment) {
         if(err){
             res.redirect("back")
@@ -64,7 +64,7 @@ router.put("/:comment_id",function(req,res){
 });
 
 //Comments destroy route
-router.delete("/:comment_id",function(req,res){
+router.delete("/:comment_id",checkCommentOwnership,function(req,res){
     Comment.findByIdAndRemove(req.params.comment_id,function(err){
         if(err){
             res.redirect("back");
@@ -83,6 +83,26 @@ function isLoggedIn(req,res,next){
         res.redirect("/login");
     }
 }
+
+function checkCommentOwnership(req,res,next){
+        if(req.isAuthenticated()){
+            Comment.findById(req.params.comment_id,function(err,foundComment){
+                if(err){
+                    res.redirect("back")
+                }else{
+                     //CHECK IF THE THIS Comment WAS MADE BY THE USER WHO IS LOGGED IN
+                    if(foundComment.author.id.equals(req.user._id)){
+                        next();    
+                    }else{
+                        res.redirect("back");
+                    }
+                }
+        });
+    }else{
+        res.redirect("back");
+    }
+}
+
 
 
 module.exports= router;

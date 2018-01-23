@@ -5,3 +5,7 @@
 .img-thumbnail{
     padding: 0;
 }
+
+.deleteBtn{
+    display: inline;
+}
